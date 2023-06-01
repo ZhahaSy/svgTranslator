@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Svg中英文转换器 V0.4
+    </title>
+</head>
+<style>
+.btn{
+    line-height: 1.5715;
+    position: relative;
+    display: inline-block;
+    font-weight: 400;
+    white-space: nowrap;
+    text-align: center;
+    background-image: none;
+    border: 1px solid transparent;
+    box-shadow: 0 2px #00000004;
+    cursor: pointer;
+    transition: all .3s cubic-bezier(.645,.045,.355,1);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+    height: 32px;
+    padding: 4px 15px;
+    font-size: 14px;
+    border-radius: 2px;
+    color: #000000d9;
+    border-color: #d9d9d9;
+    background: #fff;
+}
+.tip {
+    max-width: 30px;
+    color: #999;
+    font-size: 14px;
+}
+</style>
+<body>
+    <div style='min-height:80px;max-height: 80px;'>
+        <button id="replaceMapButton" class='btn'>请选择 翻译文件</button>
+        <label class='tip'>翻译文件选择后会获取翻译表, 在转换文件时使用这个表格内提供的信息</label>
+        <div id='replaceMapFileView'></div>
+    </div>
+    <div style='min-height:80px;max-height: 80px;'>
+        <button id="select-svg-button" class='btn'>选择 SVG 文件</button>
+        <label class='tip'>选择需要翻译的svg文件</label>
+        <div id='fileView'></div>
+    </div>
+
+    <div style='min-height:80px;max-height: 80px;'>
+        <button id="get-chinese" class='btn'>获取源文件文本</button>
+        <label class='tip'>用于获取上次的svg文件中的所有的纯中文文本</label>
+        <div id='chineseViewer'></div>
+    </div>
+    <div style='min-height:80px;max-height: 80px;'>
+        <button id="replace-svg" class='btn'>转换文件</button>
+        <label class='tip'>基于翻译文件翻译所有匹配上的文本，并下载文件</label>
+        <div id='replace-result_viewer'></div>
+    </div>
+    
+</body>
+<script>
+class CSVParser {  
+    constructor() {  
+    }
+
+    parse(csvString) {  
+        const csvRows = csvString.split("\r\n");  
+        let csvArray = [];
+
+        csvRows.forEach((row) => {  
+            const values = row.split(",");  
+            csvArray.push({  
+            name: values[0],  
+            values: values.slice(1)  
+            });  
+        });
+
+        return csvArray; 
+    }  
+}
+</script>
+<script type='text/javascript'>
+    // 使用示例  
+    const csvParser = new CSVParser();  
+
+    let replaceMap;
+    const selectSVGButton = document.getElementById('select-svg-button');  
+    const svgContainer = document.getElementById('svg_container');
+    const getChineseButton = document.getElementById('get-chinese');
+    const replaceMapButton = document.getElementById('replaceMapButton');
+    const replaceMapFileView = document.getElementById('replaceMapFileView');
+    
+    const replaceSvgButton = document.getElementById('replace-svg');
+    const fileView = document.getElementById('fileView');
+    const chineseViewer = document.getElementById('chineseViewer');
+    const replaceResultViewer = document.getElementById('replace-result_viewer');
+
+    let file;
+    let fileContent;
+
+    // 去重
+    function unique (arr) {
+        return Array.from(new Set(arr))
+    }
+
+    function arrayToMap (arr) {
+        let resultMap = new Map()
+        for (let i = 0; i < arr.length; i++) {
+            const element = arr[i];
+            if (element.name) {
+                resultMap.set(element.name, element.values[0])
+            }
+        }
+        return resultMap
+    }
+
+    function downloadSvg (str, fileName) {
+        const uri = 'data:text/svg;charset=utf-8,\ufeff' + encodeURIComponent(str);
+        // 通过创建a标签实现
+        const link = document.createElement("a");
+        link.href = uri;
+        // 对下载的文件命名
+        link.download =  fileName;
+        link.click();
+    }
+    /**
+     * 下载csv文件
+     * @param str: 列头
+     * @param data: string[] 需要push的数据
+     * @return
+    */
+    function downloadCsv(str, data) {
+        str += '\n'
+        // 增加\t为了不让表格显示科学计数法或者其他格式
+        str += data.join(',\n')
+        // encodeURIComponent解决中文乱码
+        const uri = 'data:text/csv;charset=utf-8,\ufeff' + encodeURIComponent(str);
+        // 通过创建a标签实现
+        const link = document.createElement("a");
+        link.href = uri;
+        // 对下载的文件命名
+        link.download =  "下载数据.csv";
+        link.click();
+    }
+    // string 转 dom
+    function loadXMLString(txt) 
+    {
+        try //Internet Explorer
+        {
+            xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
+            xmlDoc.async="false";
+            xmlDoc.loadXML(txt);
+            //alert('IE');
+            return(xmlDoc); 
+        }
+        catch(e)
+        {
+            try //Firefox, Mozilla, Opera, etc.
+                {
+                    parser=new DOMParser();
+                    xmlDoc=parser.parseFromString(txt,"text/xml");
+                //alert('FMO');
+                    return(xmlDoc);
+                }
+            catch(e) {alert(e.message)}
+        }
+        return(null);
+    }　
+
+    function getNodeTextList (textNodeList, textList=[], callBack) {
+        for (let i = 0; i < textNodeList.length; i++) {
+            const element = textNodeList[i];
+            let childNodes = [...element.querySelectorAll('tspan'), ...element.querySelectorAll('text')]
+            if (childNodes.length) {
+                for(let j = 0; j < childNodes.length; j++) {
+                  if(childNodes[j].nodeName === 'tspan') {
+                    callBack ? callBack(childNodes) : textList.push(childNodes[j].innerHTML)
+                  } else {
+                    getNodeTextList(childNodes[j], textList)
+                  }
+                }
+            } else {
+                callBack ? callBack(element) : textList.push(element.innerHTML)
+            } 
+        }
+        return textList
+    }
+
+    // 获取SvgStr中的所有的中文
+    const getChinese = function (svgStr) {
+        // 将str转化为 html标签
+        let svg = loadXMLString(svgStr);
+        // 选择全部的text标签
+        let textNodeList = svg.querySelectorAll('text');
+        // 提取全部字符
+        const textList =  unique(getNodeTextList(textNodeList, [])).filter(str => /[\u4e00-\u9fa5]/.test(str))
+        
+        chineseViewer.innerText = textList.join('\n')
+        // 获取中文结果
+        downloadCsv('中文', textList);
+    }
+
+
+    function svgFileUpload() {
+        const fileInput = document.createElement('input');  
+        fileInput.type = 'file';
+        fileInput.accept = 'application/svg'
+        fileInput.addEventListener('change', async function() {  
+            file = fileInput.files[0];
+            fileView.innerText = file.name
+            const result = await readFile(file)
+            fileContent = result;
+        }); 
+        fileInput.click()
+    }
+
+    
+    const readFile = function (file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.readAsText(file,'utf8') // input.files[0]为第一个文件
+            reader.onload = ()=>{
+                resolve(reader.result)
+            }
+        })
+        
+    }
+
+    // 转换文件
+    const replaceSvg = (replaceMap, svg) => {
+        let result = svg;
+        replaceMap.forEach((val, key) => {
+            const english = val;
+            let regStr = eval(`/${key.replaceAll('/', '[/]')}/g`)
+            result = result.replaceAll(regStr, english)
+        })
+            
+        replaceResultViewer.innerHTML = result;
+        downloadSvg(result, file.name || 'translatedSvg.svg')
+        return result;
+    }
+
+    const replaceSvgOnNode = (replaceMap, svgStr) => {
+        // 将str转化为 html标签
+        let svg = loadXMLString(svgStr);
+        // 选择全部的text标签
+        let textNodeList = svg.querySelectorAll('text');
+        // 提取全部字符
+        getNodeTextList(textNodeList, [], (node) => {
+            const translateWords = replaceMap.get(node.innerHTML.trim());
+            if (translateWords) {
+                node.innerHTML = translateWords
+            }
+        })
+        var s = new XMLSerializer();
+        var str = s.serializeToString(svg);
+        replaceResultViewer.innerHTML = str;
+        downloadSvg(str, file.name || 'translatedSvg.svg')
+    }
+
+
+    const getSVGList = async  function () {
+        if (!file) {
+            alert('没有文件')
+        }
+        file & getChinese(fileContent)
+    }
+
+    const uploadAndGetReplaceMap = function (params) {
+        const fileInput = document.createElement('input');  
+        fileInput.type = 'file';
+        fileInput.accept = 'application/csv'
+        fileInput.addEventListener('change',async  function() {  
+            
+            replaceMapFileView.innerText = fileInput.files[0].name
+            const fileData = await readFile(fileInput.files[0])
+            const result = csvParser.parse(fileData)
+            result.shift();
+            replaceMap = arrayToMap(result);
+            console.log(replaceMap);
+        }); 
+        fileInput.click()
+    }
+    
+    selectSVGButton.addEventListener('click', svgFileUpload);   
+    getChineseButton.addEventListener('click', getSVGList);   
+    replaceSvgButton.addEventListener('click', () => replaceSvgOnNode(replaceMap, fileContent));
+    replaceMapButton.addEventListener('click', uploadAndGetReplaceMap);
+    
+</script>
+</html>
