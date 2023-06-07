@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,36 +9,38 @@
     </title>
 </head>
 <style>
-.btn{
-    line-height: 1.5715;
-    position: relative;
-    display: inline-block;
-    font-weight: 400;
-    white-space: nowrap;
-    text-align: center;
-    background-image: none;
-    border: 1px solid transparent;
-    box-shadow: 0 2px #00000004;
-    cursor: pointer;
-    transition: all .3s cubic-bezier(.645,.045,.355,1);
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    user-select: none;
-    touch-action: manipulation;
-    height: 32px;
-    padding: 4px 15px;
-    font-size: 14px;
-    border-radius: 2px;
-    color: #000000d9;
-    border-color: #d9d9d9;
-    background: #fff;
-}
-.tip {
-    max-width: 30px;
-    color: #999;
-    font-size: 14px;
-}
+    .btn {
+        line-height: 1.5715;
+        position: relative;
+        display: inline-block;
+        font-weight: 400;
+        white-space: nowrap;
+        text-align: center;
+        background-image: none;
+        border: 1px solid transparent;
+        box-shadow: 0 2px #00000004;
+        cursor: pointer;
+        transition: all .3s cubic-bezier(.645, .045, .355, 1);
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+        touch-action: manipulation;
+        height: 32px;
+        padding: 4px 15px;
+        font-size: 14px;
+        border-radius: 2px;
+        color: #000000d9;
+        border-color: #d9d9d9;
+        background: #fff;
+    }
+
+    .tip {
+        max-width: 30px;
+        color: #999;
+        font-size: 14px;
+    }
 </style>
+
 <body>
     <div style='min-height:80px;max-height: 80px;'>
         <button id="replaceMapButton" class='btn'>请选择 翻译文件</button>
@@ -51,6 +54,12 @@
     </div>
 
     <div style='min-height:80px;max-height: 80px;'>
+        <input type="file" id="folder-input" class='btn' webkitdirectory directory multiple></input>
+        <label class='tip'>选择需要翻译的svg文件夹</label>
+    </div>
+
+
+    <div style='min-height:80px;max-height: 80px;'>
         <button id="get-chinese" class='btn'>获取源文件文本</button>
         <label class='tip'>用于获取上次的svg文件中的所有的纯中文文本</label>
         <div id='chineseViewer'></div>
@@ -60,54 +69,62 @@
         <label class='tip'>基于翻译文件翻译所有匹配上的文本，并下载文件</label>
         <div id='replace-result_viewer'></div>
     </div>
-    
+
+    <button id="readFolder" class='btn'>
+        readSVGFilesFromFolder
+    </button>
 </body>
 <script>
-class CSVParser {  
-    constructor() {  
+    class CSVParser {
+        constructor() {
+        }
+
+        parse(csvString) {
+            const csvRows = csvString.split("\r\n");
+            let csvArray = [];
+
+            csvRows.forEach((row) => {
+                const values = row.split(",");
+                csvArray.push({
+                    name: values[0],
+                    values: values.slice(1)
+                });
+            });
+
+            return csvArray;
+        }
     }
-
-    parse(csvString) {  
-        const csvRows = csvString.split("\r\n");  
-        let csvArray = [];
-
-        csvRows.forEach((row) => {  
-            const values = row.split(",");  
-            csvArray.push({  
-            name: values[0],  
-            values: values.slice(1)  
-            });  
-        });
-
-        return csvArray; 
-    }  
-}
 </script>
 <script type='text/javascript'>
     // 使用示例  
-    const csvParser = new CSVParser();  
+    const csvParser = new CSVParser();
 
     let replaceMap;
-    const selectSVGButton = document.getElementById('select-svg-button');  
+    const selectSVGButton = document.getElementById('select-svg-button');
     const svgContainer = document.getElementById('svg_container');
     const getChineseButton = document.getElementById('get-chinese');
     const replaceMapButton = document.getElementById('replaceMapButton');
     const replaceMapFileView = document.getElementById('replaceMapFileView');
-    
+
     const replaceSvgButton = document.getElementById('replace-svg');
     const fileView = document.getElementById('fileView');
     const chineseViewer = document.getElementById('chineseViewer');
     const replaceResultViewer = document.getElementById('replace-result_viewer');
+    const readFolder = document.getElementById('readFolder');
+
 
     let file;
     let fileContent;
 
+    let fileStrMap = new Map()
+    let folderStr = ''
+
     // 去重
-    function unique (arr) {
+    function unique(arr) {
         return Array.from(new Set(arr))
     }
 
-    function arrayToMap (arr) {
+    function arrayToMap(arr) {
         let resultMap = new Map()
         for (let i = 0; i < arr.length; i++) {
             const element = arr[i];
@@ -118,13 +135,13 @@ class CSVParser {
         return resultMap
     }
 
-    function downloadSvg (str, fileName) {
+    function downloadSvg(str, fileName) {
         const uri = 'data:text/svg;charset=utf-8,\ufeff' + encodeURIComponent(str);
         // 通过创建a标签实现
         const link = document.createElement("a");
         link.href = uri;
         // 对下载的文件命名
-        link.download =  fileName;
+        link.download = fileName;
         link.click();
     }
     /**
@@ -143,49 +160,47 @@ class CSVParser {
         const link = document.createElement("a");
         link.href = uri;
         // 对下载的文件命名
-        link.download =  "下载数据.csv";
+        link.download = "下载数据.csv";
         link.click();
     }
     // string 转 dom
-    function loadXMLString(txt) 
-    {
+    function loadXMLString(txt) {
         try //Internet Explorer
         {
-            xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
-            xmlDoc.async="false";
+            xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
+            xmlDoc.async = "false";
             xmlDoc.loadXML(txt);
             //alert('IE');
-            return(xmlDoc); 
+            return (xmlDoc);
         }
-        catch(e)
-        {
+        catch (e) {
             try //Firefox, Mozilla, Opera, etc.
-                {
-                    parser=new DOMParser();
-                    xmlDoc=parser.parseFromString(txt,"text/xml");
+            {
+                parser = new DOMParser();
+                xmlDoc = parser.parseFromString(txt, "text/xml");
                 //alert('FMO');
-                    return(xmlDoc);
-                }
-            catch(e) {alert(e.message)}
+                return (xmlDoc);
+            }
+            catch (e) { alert(e.message) }
         }
-        return(null);
-    }　
+        return (null);
+    }
 
-    function getNodeTextList (textNodeList, textList=[], callBack) {
+    function getNodeTextList(textNodeList, textList = [], callBack) {
         for (let i = 0; i < textNodeList.length; i++) {
             const element = textNodeList[i];
             let childNodes = [...element.querySelectorAll('tspan'), ...element.querySelectorAll('text')]
             if (childNodes.length) {
-                for(let j = 0; j < childNodes.length; j++) {
-                  if(childNodes[j].nodeName === 'tspan') {
-                    callBack ? callBack(childNodes) : textList.push(childNodes[j].innerHTML)
-                  } else {
-                    getNodeTextList(childNodes[j], textList)
-                  }
+                for (let j = 0; j < childNodes.length; j++) {
+                    if (childNodes[j].nodeName === 'tspan') {
+                        callBack ? callBack(childNodes) : textList.push(childNodes[j].innerHTML)
+                    } else {
+                        getNodeTextList(childNodes[j], textList)
+                    }
                 }
             } else {
                 callBack ? callBack(element) : textList.push(element.innerHTML)
-            } 
+            }
         }
         return textList
     }
@@ -197,8 +212,8 @@ class CSVParser {
         // 选择全部的text标签
         let textNodeList = svg.querySelectorAll('text');
         // 提取全部字符
-        const textList =  unique(getNodeTextList(textNodeList, [])).filter(str => /[\u4e00-\u9fa5]/.test(str))
-        
+        const textList = unique(getNodeTextList(textNodeList, [])).filter(str => /[\u4e00-\u9fa5]/.test(str))
+
         chineseViewer.innerText = textList.join('\n')
         // 获取中文结果
         downloadCsv('中文', textList);
@@ -206,28 +221,28 @@ class CSVParser {
 
 
     function svgFileUpload() {
-        const fileInput = document.createElement('input');  
+        const fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.accept = 'application/svg'
-        fileInput.addEventListener('change', async function() {  
+        fileInput.addEventListener('change', async function () {
             file = fileInput.files[0];
             fileView.innerText = file.name
             const result = await readFile(file)
             fileContent = result;
-        }); 
+        });
         fileInput.click()
     }
 
-    
+
     const readFile = function (file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader()
-            reader.readAsText(file,'utf8') // input.files[0]为第一个文件
-            reader.onload = ()=>{
+            reader.readAsText(file, 'utf8') // input.files[0]为第一个文件
+            reader.onload = () => {
                 resolve(reader.result)
             }
         })
-        
+
     }
 
     // 转换文件
@@ -238,7 +253,7 @@ class CSVParser {
             let regStr = eval(`/${key.replaceAll('/', '[/]')}/g`)
             result = result.replaceAll(regStr, english)
         })
-            
+
         replaceResultViewer.innerHTML = result;
         downloadSvg(result, file.name || 'translatedSvg.svg')
         return result;
@@ -263,33 +278,63 @@ class CSVParser {
     }
 
 
-    const getSVGList = async  function () {
-        if (!file) {
+    const getSVGList = async function () {
+        if (file) {
+            file & getChinese(fileContent)
+        } else if (folderStr) {
+            getChinese(folderStr)
+        } else {
             alert('没有文件')
         }
-        file & getChinese(fileContent)
     }
 
     const uploadAndGetReplaceMap = function (params) {
-        const fileInput = document.createElement('input');  
+        const fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.accept = 'application/csv'
-        fileInput.addEventListener('change',async  function() {  
-            
+        fileInput.addEventListener('change', async function () {
+
             replaceMapFileView.innerText = fileInput.files[0].name
             const fileData = await readFile(fileInput.files[0])
             const result = csvParser.parse(fileData)
             result.shift();
             replaceMap = arrayToMap(result);
             console.log(replaceMap);
-        }); 
+        });
         fileInput.click()
     }
-    
-    selectSVGButton.addEventListener('click', svgFileUpload);   
-    getChineseButton.addEventListener('click', getSVGList);   
+
+    function readSVGFilesFromFolder() {
+        const folderInput = document.getElementById('folder-input');
+
+        folderInput.addEventListener('change', async (event) => {
+            const files = event.target.files;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+
+                if (file.type === 'image/svg+xml') {
+                    const res = await readFile(file);
+                    fileStrMap.set(file.name, {
+                        oldStr: res,
+                        newStrs: '',
+                    })
+                    folderStr += res
+                    console.log(folderStr);
+                }
+            }
+        });
+    }
+
+    readSVGFilesFromFolder()
+
+
+    selectSVGButton.addEventListener('click', svgFileUpload);
+    getChineseButton.addEventListener('click', getSVGList);
     replaceSvgButton.addEventListener('click', () => replaceSvgOnNode(replaceMap, fileContent));
     replaceMapButton.addEventListener('click', uploadAndGetReplaceMap);
-    
+
+
 </script>
+
 </html>
