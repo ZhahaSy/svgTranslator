@@ -1,0 +1,47 @@
+{
+  "compilerOptions": {
+    "types": ["vite/client", "node"],
+    "outDir": "dist",
+    "target": "esnext",
+    "useDefineForClassFields": true,
+    "module": "esnext",
+    "lib": ["esnext", "dom"],
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "jsx": "preserve",
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "baseUrl": "./",
+    "strict": true,
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true, //不允许使用any
+    // "strictNullChecks": true, //不允许使用null
+    "noImplicitThis": true //不允许往this上面挂属性
+  },
+  "include": ["typings/**/*", "typings.d.ts", "src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "exclude": [
+    "node_modules",
+    "lib",
+    "es",
+    "build",
+    "dist",
+    "scripts/**/*",
+    "jest",
+    "**/__test__",
+    "test",
+    "docs",
+    "tests"
+  ],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}

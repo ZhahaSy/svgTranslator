@@ -1,0 +1,198 @@
+/*
+ * 网页适配 iPhoneX，解决上下左右安全距离适配问题：
+ *  https://jelly.jd.com/article/6006b1055b6c6a01506c87fd
+ */
+
+@import '../variable.less';
+
+// ------------ base begin ------------
+
+.safe-top-base(@property, @top) when (ispixel(@top)) {
+  @{property}: @top;
+  @supports (top: @constant-safe-top) {
+    @{property}: calc(@top + @constant-safe-top);
+  }
+  @supports (top: @env-safe-top) {
+    @{property}: calc(@top + @env-safe-top);
+  }
+}
+
+.safe-bottom-base(@property, @bottom) when (ispixel(@bottom)) {
+  @{property}: @bottom;
+  @supports (bottom: @constant-safe-bottom) {
+    @{property}: calc(@bottom + @constant-safe-bottom);
+  }
+  @supports (bottom: @env-safe-bottom) {
+    @{property}: calc(@bottom + @env-safe-bottom);
+  }
+}
+
+.safe-left-base(@property, @top) when (ispixel(@top)) {
+  @{property}: @top;
+  @supports (left: @constant-safe-top) {
+    @{property}: calc(@top + @constant-safe-top);
+  }
+  @supports (top: @env-safe-top) {
+    @{property}: calc(@top + @env-safe-top);
+  }
+}
+
+.safe-right-base(@property, @bottom) when (ispixel(@bottom)) {
+  @{property}: @bottom;
+  @supports (right: @constant-safe-bottom) {
+    @{property}: calc(@bottom + @constant-safe-bottom);
+  }
+  @supports (right: @env-safe-bottom) {
+    @{property}: calc(@bottom + @env-safe-bottom);
+  }
+}
+
+// ------------ base end ------------
+
+// ------------ top begin ------------
+
+/*
+  *  top 安全距离
+  *  参数为可选参数，默认值为 0PX，如果填入，那么必须具备单位，
+  *  eg: 
+  *      .safe-top()
+  *      .safe-top(10PX)
+  */
+.safe-top(@top: 0px) when (ispixel(@top)) {
+  .safe-top-base(top, @top);
+}
+
+/*
+  *  padding-top 安全距离
+  *  参数为可选参数，默认值为 0PX，如果填入，那么必须具备单位，
+  *  eg: 
+  *      .safe-padding-top()
+  *      .safe-padding-top(10PX)
+  */
+.safe-padding-top(@top: 0px) when (ispixel(@top)) {
+  .safe-top-base(padding-top, @top);
+}
+
+/*
+  *  margin-top 安全距离
+  *  参数为可选参数，默认值为 0PX，如果填入，那么必须具备单位，
+  *  eg: 
+  *      .safe-margin-top()
+  *      .safe-margin-top(10PX)
+  */
+.safe-margin-top(@top: 0px) when (ispixel(@top)) {
+  .safe-top-base(margin-top, @top);
+}
+
+// ------------ top end ------------
+
+// ------------ bottom begin ------------
+
+/*
+  *  bottom 安全距离
+  *  参数为可选参数，默认值为 0PX，如果填入，那么必须具备单位，
+  *  eg: 
+  *      .safe-margin()
+  *      .safe-margin(10PX)
+  */
+.safe-bottom(@bottom: 0px) when (ispixel(@bottom)) {
+  .safe-bottom-base(bottom, @bottom);
+}
+
+/*
+  *  padding-bottom 安全距离
+  *  参数为可选参数，默认值为 0PX，如果填入，那么必须具备单位，
+  *  eg: 
+  *      .safe-padding-bottom()
+  *      .safe-padding-bottom(10PX)
+  */
+.safe-padding-bottom(@bottom: 0px) when (ispixel(@bottom)) {
+  .safe-bottom-base(padding-bottom, @bottom);
+}
+
+/*
+  *  margin-bottom 安全距离
+  *  参数为可选参数，默认值为 0PX，如果填入，那么必须具备单位，
+  *  eg: 
+  *      .safe-margin-bottom()
+  *      .safe-margin-bottom(10PX)
+  */
+.safe-margin-bottom(@bottom: 0px) when (ispixel(@bottom)) {
+  .safe-bottom-base(margin-bottom, @bottom);
+}
+
+// ------------ bottom end ------------
+
+// ------------ left begin ------------
+
+/*
+  *  left 安全距离
+  *  参数为可选参数，默认值为 0PX，如果填入，那么必须具备单位，
+  *  eg: 
+  *      .safe-left()
+  *      .safe-left(10PX)
+  */
+.safe-left(@left: 0px) when (ispixel(@left)) {
+  .safe-left-base(left, @left);
+}
+
+/*
+  *  padding-left 安全距离
+  *  参数为可选参数，默认值为 0PX，如果填入，那么必须具备单位，
+  *  eg: 
+  *      .safe-padding-left()
+  *      .safe-padding-left(10PX)
+  */
+.safe-padding-left(@left: 0px) when (ispixel(@left)) {
+  .safe-left-base(padding-left, @left);
+}
+
+/*
+  *  margin-left 安全距离
+  *  参数为可选参数，默认值为 0PX，如果填入，那么必须具备单位，
+  *  eg: 
+  *      .safe-margin-left()
+  *      .safe-margin-left(10PX)
+  */
+.safe-margin-left(@left: 0px) when (ispixel(@left)) {
+  .safe-left-base(margin-left, @left);
+}
+
+// ------------ left end ------------
+
+// ------------ right begin ------------
+
+/*
+  *  right 安全距离
+  *  参数为可选参数，默认值为 0PX，如果填入，那么必须具备单位，
+  *  eg: 
+  *      .safe-right()
+  *      .safe-right(10PX)
+  */
+.safe-right(@right: 0px) when (ispixel(@right)) {
+  .safe-right-base(right, @right);
+}
+
+/*
+  *  padding-right 安全距离
+  *  参数为可选参数，默认值为 0PX，如果填入，那么必须具备单位，
+  *  eg: 
+  *      .safe-padding-right()
+  *      .safe-padding-right(10PX)
+  */
+.safe-padding-right(@right: 0px) when (ispixel(@right)) {
+  .safe-right-base(padding-right, @right);
+}
+
+/*
+  *  margin-right 安全距离
+  *  参数为可选参数，默认值为 0PX，如果填入，那么必须具备单位，
+  *  eg: 
+  *      .safe-margin-right()
+  *      .safe-margin-right(10PX)
+  */
+.safe-margin-right(@right: 0px) when (ispixel(@right)) {
+  .safe-right-base(margin-right, @right);
+}
+
+// ------------ right end ------------

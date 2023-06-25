@@ -1,0 +1,17 @@
+/// <reference types="vite/client" />
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+declare interface Window {
+  // extend the window
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Lunar: any;
+}
+
+declare module '*.vue' {
+  import type { DefineComponent } from 'vue';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
+  const component: DefineComponent<{}, {}, any>;
+  export default component;
+}
+
+declare module '@bilibili/bulletin';

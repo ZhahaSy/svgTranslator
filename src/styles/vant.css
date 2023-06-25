@@ -1,0 +1,10 @@
+/* 
+此文件用于覆盖 vant 的 CSS 变量
+详情请看：
+    https://vant-contrib.gitee.io/vant/v4/#/zh-CN/config-provider#ding-zhi-zhu-ti
+*/
+:root {
+    --van-blue: #00aeec;
+    --van-red: #f85a54;
+  }
+  

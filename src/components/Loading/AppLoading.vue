@@ -1,0 +1,122 @@
+<script setup lang="ts"></script>
+
+<template>
+  <div :class="Classes['loading-container']">
+    <div :class="Classes['page-loading-warp']">
+      <div :class="[Classes['ant-spin'], Classes['ant-spin-lg'], Classes['ant-spin-spinning']]">
+        <span :class="[Classes['ant-spin-dot'], Classes['ant-spin-dot-spin']]">
+          <i :class="Classes['ant-spin-dot-item']"></i>
+          <i :class="Classes['ant-spin-dot-item']"></i>
+          <i :class="Classes['ant-spin-dot-item']"></i>
+          <i :class="Classes['ant-spin-dot-item']"></i>
+        </span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style lang="less" module="Classes">
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  height: 100vh;
+}
+.page-loading-warp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 98px;
+}
+.ant-spin {
+  position: absolute;
+  display: none;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  color: rgba(0, 0, 0, 0.65);
+  color: #1890ff;
+  font-size: 14px;
+  font-variant: tabular-nums;
+  line-height: 1.5;
+  text-align: center;
+  list-style: none;
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+  font-feature-settings: 'tnum';
+}
+.ant-spin-spinning {
+  position: static;
+  display: inline-block;
+  opacity: 1;
+}
+.ant-spin-dot {
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+}
+.ant-spin-dot-item {
+  position: absolute;
+  display: block;
+  width: 9px;
+  height: 9px;
+  background-color: #1890ff;
+  border-radius: 100%;
+  transform: scale(0.75);
+  transform-origin: 50% 50%;
+  opacity: 0.3;
+  animation: antSpinMove 1s infinite linear alternate;
+}
+.ant-spin-dot-item:nth-child(1) {
+  top: 0;
+  left: 0;
+}
+.ant-spin-dot-item:nth-child(2) {
+  top: 0;
+  right: 0;
+  animation-delay: 0.4s;
+}
+.ant-spin-dot-item:nth-child(3) {
+  right: 0;
+  bottom: 0;
+  animation-delay: 0.8s;
+}
+.ant-spin-dot-item:nth-child(4) {
+  bottom: 0;
+  left: 0;
+  animation-delay: 1.2s;
+}
+.ant-spin-dot-spin {
+  transform: rotate(45deg);
+  animation: antRotate 1.2s infinite linear;
+}
+.ant-spin-lg .ant-spin-dot {
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+}
+.ant-spin-lg .ant-spin-dot i {
+  width: 14px;
+  height: 14px;
+}
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+  .ant-spin-blur {
+    background: #fff;
+    opacity: 0.5;
+  }
+}
+@keyframes antSpinMove {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes antRotate {
+  to {
+    transform: rotate(405deg);
+  }
+}
+</style>
